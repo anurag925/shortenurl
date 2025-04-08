@@ -1,0 +1,1 @@
+ALTER TABLE short_urls ADD COLUMN user_id INTEGER REFERENCES users(id);

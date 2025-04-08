@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { display: flex; flex-direction: column; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        input, button { padding: 10px; font-size: 16px; }
+        button { cursor: pointer; background: #007bff; color: white; border: none; }
+        #result { margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .auth-forms { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        
+        <div class="form-group">
+            <label for="longUrl">Enter URL to shorten:</label>
+            <input type="url" id="longUrl" placeholder="https://example.com">
+            <button onclick="shortenUrl()">Shorten</button>
+        </div>
+        
+        <div id="result"></div>
+        
+        <div class="auth-forms" id="authForms">
+            <h3>Login/Register</h3>
+            <div class="form-group">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button onclick="login()">Login</button>
+                <button onclick="register()">Register</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tokenKey = 'shortenurl_token';
+        
+        function showAuthForms() {
+            document.getElementById('authForms').style.display = 'block';
+        }
+        
+        function shortenUrl() {
+            const longUrl = document.getElementById('longUrl').value;
+            if (!longUrl) return;
+            
+            const token = localStorage.getItem(tokenKey);
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            route = '/api/v1/shorten';
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                route = '/api/v1/auth/shorten';
+            }
+            
+            fetch(route, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ long_url: longUrl })
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    showAuthForms();
+                    throw new Error('Please login to shorten URLs');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('result').innerHTML = `
+                    <p>Short URL: <a href="/r/${data.short_code}" target="_blank">${window.location.host}/r/${data.short_code}</a></p>
+                    <p>Original URL: ${data.long_url}</p>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('result').textContent = error.message;
+            });
+        }
+        
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            fetch('/api/v1/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem(tokenKey, data.token);
+                document.getElementById('authForms').style.display = 'none';
+                document.getElementById('result').textContent = 'Logged in successfully!';
+            })
+            .catch(() => {
+                document.getElementById('result').textContent = 'Login failed';
+            });
+        }
+        
+        function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            fetch('/api/v1/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem(tokenKey, data.token);
+                document.getElementById('authForms').style.display = 'none';
+                document.getElementById('result').textContent = 'Registered successfully!';
+            })
+            .catch(() => {
+                document.getElementById('result').textContent = 'Registration failed';
+            });
+        }
+        
+        // Check if user is logged in
+        if (!localStorage.getItem(tokenKey)) {
+            showAuthForms();
+        }
+    </script>
+</body>
+</html>
