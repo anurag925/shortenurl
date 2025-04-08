@@ -1,0 +1,90 @@
+definitions:
+  dto.ShortenRequest:
+    properties:
+      custom_alias:
+        maxLength: 20
+        minLength: 3
+        type: string
+      expires_at:
+        type: string
+      long_url:
+        type: string
+    required:
+    - long_url
+    type: object
+  dto.ShortenResponse:
+    properties:
+      expires_at:
+        type: string
+      long_url:
+        type: string
+      short_code:
+        type: string
+      short_url:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for shortening URLs
+  title: URL Shortener API
+  version: "1.0"
+paths:
+  /api/v1/shorten:
+    post:
+      consumes:
+      - application/json
+      description: Create a short URL from a long URL
+      parameters:
+      - description: URL to shorten
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ShortenRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ShortenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Shorten a URL
+      tags:
+      - shortener
+  /r/{short_code}:
+    get:
+      description: Redirects to the original URL from a short code
+      parameters:
+      - description: Short code
+        in: path
+        name: short_code
+        required: true
+        type: string
+      responses:
+        "301":
+          description: Moved Permanently
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Redirect to original URL
+      tags:
+      - shortener
+schemes:
+- http
+swagger: "2.0"
