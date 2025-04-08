@@ -24,7 +24,7 @@ type mockService struct {
 	service.ShortURLService
 }
 
-func (m *mockService) ShortenURL(ctx context.Context, longURL string, customAlias *string, expiresAt *time.Time) (*models.ShortURL, error) {
+func (m *mockService) ShortenURL(ctx context.Context, longURL string, userId *int64, customAlias *string, expiresAt *time.Time) (*models.ShortURL, error) {
 	args := m.Called(ctx, longURL, customAlias, expiresAt)
 	return args.Get(0).(*models.ShortURL), args.Error(1)
 }

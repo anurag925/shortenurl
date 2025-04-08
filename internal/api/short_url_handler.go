@@ -39,7 +39,13 @@ func (h *ShortURLHandler) ShortenURL(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	shortURL, err := h.service.ShortenURL(c.Request().Context(), req.LongURL, req.CustomAlias, req.ExpiresAt)
+	var userId *int64
+	if c.Get("user_id") != nil {
+		id := c.Get("user_id").(int64)
+		userId = &id
+	}
+
+	shortURL, err := h.service.ShortenURL(c.Request().Context(), req.LongURL, userId, req.CustomAlias, req.ExpiresAt)
 	if err != nil {
 		slog.Error("Failed to shorten URL", "error", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to shorten URL")

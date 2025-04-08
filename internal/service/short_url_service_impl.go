@@ -20,7 +20,7 @@ func NewShortURLService(repo repositories.ShortURLRepository) ShortURLService {
 	return &shortURLServiceImpl{repo: repo}
 }
 
-func (s *shortURLServiceImpl) ShortenURL(ctx context.Context, longURL string, customAlias *string, expiresAt *time.Time) (*models.ShortURL, error) {
+func (s *shortURLServiceImpl) ShortenURL(ctx context.Context, longURL string, userID *int64, customAlias *string, expiresAt *time.Time) (*models.ShortURL, error) {
 	shortCode := ""
 	if customAlias != nil {
 		shortCode = *customAlias
@@ -32,6 +32,9 @@ func (s *shortURLServiceImpl) ShortenURL(ctx context.Context, longURL string, cu
 		ShortCode: shortCode,
 		LongURL:   longURL,
 		ExpiresAt: expiresAt,
+	}
+	if userID != nil {
+		shortURL.UserID = userID
 	}
 
 	if err := s.repo.Create(ctx, shortURL); err != nil {

@@ -48,7 +48,7 @@ func TestShortURLService(t *testing.T) {
 			*arg = *expectedShortURL
 		})
 
-		result, err := service.ShortenURL(ctx, longURL, nil, nil)
+		result, err := service.ShortenURL(ctx, longURL, nil, nil, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedShortURL.ShortCode, result.ShortCode)
 		assert.Equal(t, expectedShortURL.LongURL, result.LongURL)
